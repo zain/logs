@@ -1,4 +1,4 @@
-Logs: Logging for Humans
+Logs: A logging library for humans.
 =========================
 
 
