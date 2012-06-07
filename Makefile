@@ -1,5 +1,5 @@
 test:
-	nosetests --with-color tests
+	nosetests --auto-color --nocapture tests
 
 travis:
-	nosetests tests
+	nosetests -v tests
