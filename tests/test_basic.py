@@ -40,10 +40,17 @@ class CustomLoggerTestSuite(DefaultLoggerTestSuite):
         self.logger = logs.Logger("Custom Logger")
     
     def test_invalid_level(self):
-        with self.assertRaises(logs.exceptions.InvalidLogLevel):
+        try:
             self.logger.log("invalid", "This is an invalid message.")
-        with self.assertRaises(AttributeError):
+            assert False
+        except logs.exceptions.InvalidLogLevel:
+            pass
+        
+        try:
             self.logger.invalid("This is an invalid message.")
+            assert False
+        except AttributeError:
+            pass
 
 
 class CustomTransportTestSuite(CustomLoggerTestSuite):
