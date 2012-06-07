@@ -43,14 +43,16 @@ class Console(Transport):
             self.format = format
         else:
             self.format = ""
-            if timestamps: self.format += "{time:%d %b %H:%M:%S} - "
+            if colorize: self.format += "{start_color}"
             
-            if caller: self.format += "[{name}] - "
+            if timestamps: self.format += "{time:%d %b %H:%M:%S} "
             
-            if colorize: self.format += "{start_color}{level}:{end_color} "
-            else: self.format += "{level}: "
-            
+            self.format += "{level:<9} "
             self.format += "{msg}"
+            
+            if caller: self.format += " [@omgmail.mail.models]"
+            
+            if colorize: self.format += "{end_color}"
             
             self.format += "\n"
         
@@ -71,9 +73,9 @@ class Console(Transport):
     def color_for(self, level, all_levels):
         color_levels = {
             "emergency": "highlighted_red",
-            "alert": "highlighted_red",
+            "alert": "bold_red",
             "critical": "bold_red",
-            "error": "bold_red",
+            "error": "red",
             "warning": "yellow",
             "notice": "yellow",
             "info": "green",

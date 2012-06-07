@@ -4,7 +4,7 @@ from .exceptions import InvalidLogLevel
 from .transports import Console
 
 SYSLOG_LEVELS = ["emergency", "alert", "critical", "error", "warning", "notice", "info", "debug"]
-DEFAULT_TRANSPORTS = [Console(level="info", colorize=True, timestamps=True)]
+DEFAULT_TRANSPORTS = [Console(level="debug", colorize=True, timestamps=True, caller=False)]
 
 class Logger(object):
     def __init__(self, name=None, levels=None, transports=None, *args, **kwargs):
