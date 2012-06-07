@@ -1,16 +1,28 @@
 from .exceptions import InvalidLogLevel
+from .transports import Console
 
-SYSLOG_LEVELS = ["debug", "info", "notice", "warning", "error", "critical", "alert", "emergency"]
+SYSLOG_LEVELS = ["emergency", "alert", "critical", "error", "warning", "notice", "info", "debug"]
+DEFAULT_TRANSPORTS = []#[Console(level="info", colorize=True, timestamps=True)]
 
 class Logger(object):
-    def __init__(self, name="root", levels=None, *args, **kwargs):
-        if not levels:
-            self.levels = SYSLOG_LEVELS
+    def __init__(self, name="root", levels=None, transports=None, *args, **kwargs):
+        self.name = name
+        self.levels = levels or SYSLOG_LEVELS
+        self.transports = transports or DEFAULT_TRANSPORTS
     
-    def log(self, level, msg, *args, **kwargs):
+    def log(self, level, msg="", *args, **kwargs):
         if level not in self.levels:
             raise InvalidLogLevel("%s is not a valid log level. Valid log levels are: %s" % 
-                (level, ",".join(self.levels)))
+                (level, ", ".join(self.levels)))
+        
+        for transport in self.transports:
+            if self.levels.index(level) <= self.levels.index(transport.level):
+                transport.log(self.name, level, self.levels, msg, *args, **kwargs)
     
     def __getattr__(self, method_name):
-        return lambda msg, *args, **kwargs: self.log(*args, level=method_name, msg=msg, **kwargs)
+        if method_name not in self.levels:
+            raise AttributeError(
+                "'%s' object has no attribute '%s'. " % (self.__class__.__name__, method_name) +
+                "To log something, use a valid log level: %s" % ", ".join(self.levels)
+            )
+        return lambda msg="", *args, **kwargs: self.log(method_name, msg, *args, **kwargs)
