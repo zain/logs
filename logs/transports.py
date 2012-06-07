@@ -33,6 +33,10 @@ class Transport(object):
 
 
 class Console(Transport):
+    
+    COLORS = {"highlighted_red": "\033[41m", "bold_red": "\033[1m\033[31m", "red": "\033[31m",
+        "yellow": "\033[33m", "green": "\033[32m", "blue": "\033[34m"}
+    
     def __init__(self, format=None, colorize=False, timestamps=False, caller=False, stream=None, *args, **kwargs):
         self.stream = stream or sys.stdout
         if format:
@@ -43,7 +47,7 @@ class Console(Transport):
             
             if caller: self.format += "[{name}] - "
             
-            if colorize: self.format += "{start_color}{level}{end_color}: "
+            if colorize: self.format += "{start_color}{level}:{end_color} "
             else: self.format += "{level}: "
             
             self.format += "{msg}"
@@ -60,6 +64,21 @@ class Console(Transport):
         
         msg = msg.strip()
         
-        output = self.format.format(msg=msg, name=name, level=level, start_color="", 
-            end_color="", time=datetime.datetime.now())
+        output = self.format.format(msg=msg, name=name, level=level, time=datetime.datetime.now(),
+            start_color=self.color_for(level, all_levels), end_color="\033[0m")
         self.stream.write(output)
+    
+    def color_for(self, level, all_levels):
+        color_levels = {
+            "emergency": "highlighted_red",
+            "alert": "highlighted_red",
+            "critical": "bold_red",
+            "error": "bold_red",
+            "warning": "yellow",
+            "notice": "yellow",
+            "info": "green",
+            "debug": "blue"
+        }
+        if level not in color_levels:
+            return Console.COLORS["blue"]
+        return Console.COLORS[color_levels[level]]
