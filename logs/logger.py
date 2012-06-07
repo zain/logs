@@ -20,12 +20,23 @@ class Logger(object):
         if self.name:
             name = self.name
         else:
-            # populate the name with the caller
-            name = sys._getframe(2).f_globals['__name__']
+            # populate the name with the caller from the stack
+            name = self.get_caller()
         
         for transport in self.transports:
             if self.levels.index(level) <= self.levels.index(transport.level):
                 transport.log(name, level, self.levels, msg, *args, **kwargs)
+    
+    def get_caller(self):
+        i = 0
+        name = ""
+        while not name.startswith("logs"):
+            name = sys._getframe(i).f_globals['__name__']
+            i += 1
+        while name.startswith("logs"):
+            name = sys._getframe(i).f_globals['__name__']
+            i += 1
+        return name
     
     def __getattr__(self, method_name):
         if method_name not in self.levels:

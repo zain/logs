@@ -78,7 +78,7 @@ class CustomTransportTestSuite(CustomLoggerTestSuite):
 class ConsoleTransportTestSuite(CustomTransportTestSuite):
     def setUp(self):
         self.stream = StringIO.StringIO()
-        transport = logs.transports.Console(level="debug", timestamps=True, stream=self.stream)
+        transport = logs.transports.Console(level="debug", timestamps=True, caller=True, stream=self.stream)
         self.logger = logs.Logger(transports=[transport])
     
     def tearDown(self):
@@ -91,7 +91,3 @@ class ConsoleTransportTestSuite(CustomTransportTestSuite):
     def assert_msg_logged(self, expected_msg):
         logged_msg = self.stream.getvalue().split('\n')[-2]
         self.assertTrue(expected_msg in logged_msg)
-
-
-class MultipleTransportTestSuite(CustomLoggerTestSuite):
-    pass

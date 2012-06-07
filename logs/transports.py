@@ -33,7 +33,7 @@ class Transport(object):
 
 
 class Console(Transport):
-    def __init__(self, format=None, colorize=False, timestamps=False, via=False, stream=None, *args, **kwargs):
+    def __init__(self, format=None, colorize=False, timestamps=False, caller=False, stream=None, *args, **kwargs):
         self.stream = stream or sys.stdout
         if format:
             self.format = format
@@ -41,7 +41,7 @@ class Console(Transport):
             self.format = ""
             if timestamps: self.format += "{time:%d %b %H:%M:%S} - "
             
-            if via: self.format += "[{name}] - "
+            if caller: self.format += "[{name}] - "
             
             if colorize: self.format += "{start_color}{level}{end_color}: "
             else: self.format += "{level}: "
