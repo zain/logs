@@ -1,7 +1,7 @@
-import logging
+import datetime, logging, sys
 
 class Transport(object):
-    def __init__(self, handler, level):
+    def __init__(self, level, handler=None, *args, **kwargs):
         self.handler = handler
         self.level = level
     
@@ -33,6 +33,33 @@ class Transport(object):
 
 
 class Console(Transport):
-    def __init__(self, level=-1, format=None, colorize=False, timestamps=False):
-        if not format:
-            format = "%(levelname)-10s %(message)s"
+    def __init__(self, format=None, colorize=False, timestamps=False, via=False, stream=None, *args, **kwargs):
+        self.stream = stream or sys.stdout
+        if format:
+            self.format = format
+        else:
+            self.format = ""
+            if timestamps: self.format += "{time:%d %b %H:%M:%S} - "
+            
+            if via: self.format += "[{name}] - "
+            
+            if colorize: self.format += "{start_color}{level}{end_color}: "
+            else: self.format += "{level}: "
+            
+            self.format += "{msg}"
+            
+            self.format += "\n"
+        
+        Transport.__init__(self, *args, **kwargs)
+    
+    def log(self, name, level, all_levels, msg="", *args, **kwargs):
+        if args:
+            msg += " %s" % self.format_vals(args)
+        if kwargs:
+            msg += " %s" % self.format_kv(kwargs)
+        
+        msg = msg.strip()
+        
+        output = self.format.format(msg=msg, name=name, level=level, start_color="", 
+            end_color="", time=datetime.datetime.now())
+        self.stream.write(output)

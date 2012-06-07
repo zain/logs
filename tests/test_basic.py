@@ -1,6 +1,7 @@
+import unittest, StringIO
+
 from .context import logs
 from .handlers import ListHandler
-import unittest
 
 class DefaultLoggerTestSuite(unittest.TestCase):
     def setUp(self):
@@ -58,12 +59,37 @@ class CustomTransportTestSuite(CustomLoggerTestSuite):
         list_transport = logs.transports.Transport(handler=ListHandler(), level="debug")
         self.logger = logs.Logger(transports=[list_transport])
     
+    def test_adding_a_new_log_level(self):
+        self.logger.levels.append("super_debug")
+        self.logger.super_debug("This should be below the log level and should be ignored.")
+        self.assert_num_logged(0)
+        self.logger.debug("This should still be logged though.")
+        self.assert_num_logged(1)
+    
     def assert_num_logged(self, num_expected):
         num_logged = len(self.logger.transports[0].handler.log_list)
         self.assertEquals(num_logged, num_expected)
     
     def assert_msg_logged(self, expected_msg):
         logged_msg = self.logger.transports[0].handler.log_list[-1]
+        self.assertTrue(expected_msg in logged_msg)
+
+
+class ConsoleTransportTestSuite(CustomTransportTestSuite):
+    def setUp(self):
+        self.stream = StringIO.StringIO()
+        transport = logs.transports.Console(level="debug", timestamps=True, stream=self.stream)
+        self.logger = logs.Logger(transports=[transport])
+    
+    def tearDown(self):
+        self.stream.close()
+    
+    def assert_num_logged(self, num_expected):
+        num_logged = len(self.stream.getvalue().split('\n')) - 1 # trailing newline
+        self.assertEquals(num_logged, num_expected)
+    
+    def assert_msg_logged(self, expected_msg):
+        logged_msg = self.stream.getvalue().split('\n')[-2]
         self.assertTrue(expected_msg in logged_msg)
 
 

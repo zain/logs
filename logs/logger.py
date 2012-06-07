@@ -4,7 +4,7 @@ from .exceptions import InvalidLogLevel
 from .transports import Console
 
 SYSLOG_LEVELS = ["emergency", "alert", "critical", "error", "warning", "notice", "info", "debug"]
-DEFAULT_TRANSPORTS = []#[Console(level="info", colorize=True, timestamps=True)]
+DEFAULT_TRANSPORTS = [Console(level="info", colorize=True, timestamps=True)]
 
 class Logger(object):
     def __init__(self, name=None, levels=None, transports=None, *args, **kwargs):
@@ -17,7 +17,9 @@ class Logger(object):
             raise InvalidLogLevel("%s is not a valid log level. Valid log levels are: %s" % 
                 (level, ", ".join(self.levels)))
         
-        if not self.name:
+        if self.name:
+            name = self.name
+        else:
             # populate the name with the caller
             name = sys._getframe(2).f_globals['__name__']
         
