@@ -4,6 +4,6 @@ python:
   - "2.7"
   - "pypy"
 install:
-  - pip install nose
+  - pip install -r requirements_dev.txt
   - pip install . --use-mirrors
 script: make travis 
