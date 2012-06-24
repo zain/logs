@@ -3,6 +3,7 @@ import unittest, StringIO
 from .context import logs
 from .handlers import ListHandler
 
+
 class DefaultLoggerTestSuite(unittest.TestCase):
     def setUp(self):
         self.logger = logs
@@ -27,7 +28,22 @@ class DefaultLoggerTestSuite(unittest.TestCase):
         self.logger.emergency("This is an emergency message.", "with", other="stuff")
         
         self.assert_num_logged(8)
-    
+        self.assert_msg_logged("This is an emergency message. with other=stuff")
+
+    def test_logging_property_with_a_space(self):
+        self.logger.emergency("Message", has="a big property")
+        self.assert_msg_logged('Message has="a big property"')
+
+    def test_exception_logging(self):
+        try:
+            raise Exception("This is the exception message")
+        except Exception, e:
+            self.logger.error(exception=e)
+
+        self.assert_msg_logged("Traceback (most recent call last):")
+        self.assert_msg_logged("raise Exception")
+        self.assert_msg_logged("Exception: This is the exception message")
+
     # can't actually test these for the default logger, but children can
     def assert_num_logged(self, num_expected):
         pass
@@ -78,16 +94,16 @@ class CustomTransportTestSuite(CustomLoggerTestSuite):
 class ConsoleTransportTestSuite(CustomTransportTestSuite):
     def setUp(self):
         self.stream = StringIO.StringIO()
-        transport = logs.transports.Console(level="debug", timestamps=True, caller=True, stream=self.stream)
+        transport = logs.transports.Console(level="debug", timestamps=True, stream=self.stream)
         self.logger = logs.Logger(transports=[transport])
     
     def tearDown(self):
         self.stream.close()
     
     def assert_num_logged(self, num_expected):
-        num_logged = len(self.stream.getvalue().split('\n')) - 1 # trailing newline
+        # this is not perfect; it assumes that no messages logged have newlines in them
+        num_logged = len(self.stream.getvalue().split('\n')) - 1  # trailing newline
         self.assertEquals(num_logged, num_expected)
     
     def assert_msg_logged(self, expected_msg):
-        logged_msg = self.stream.getvalue().split('\n')[-2]
-        self.assertTrue(expected_msg in logged_msg)
+        self.assertTrue(expected_msg in self.stream.getvalue())

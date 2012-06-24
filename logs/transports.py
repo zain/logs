@@ -1,15 +1,21 @@
-import datetime, logging, sys
+import datetime, logging, sys, traceback
+
 
 class Transport(object):
     def __init__(self, level, handler=None, *args, **kwargs):
         self.handler = handler
         self.level = level
+        self.appendix = ""
     
     def log(self, name, level, all_levels, msg="", *args, **kwargs):
         if args:
             msg += " %s" % self.format_vals(args)
         if kwargs:
             msg += " %s" % self.format_kv(kwargs)
+        if self.appendix:
+            msg += "\n%s" % self.appendix
+
+        msg = msg.strip()
         
         logger = self.get_logger(name, all_levels)
         level_num = logging._levelNames[level]
@@ -25,11 +31,30 @@ class Transport(object):
     
     def format_vals(self, l):
         """Format a list of positional values that were logged"""
-        return " ".join(l)
+        out = ""
+        for i in l:
+            if isinstance(i, Exception):
+                self.format_exception(i)
+            else:
+                out += i + " "
+        return out.strip()
     
     def format_kv(self, pairs):
         """Format a dictionary with key/value pairs that were logged"""
-        return " ".join("%s=%s" % (key, val) for key, val in pairs.items())
+        out = ""
+        for k, v in pairs.items():
+            if isinstance(v, Exception):
+                self.format_exception(v)
+            else:
+                if "\n" in v:
+                    v = '"""%s"""' % v
+                elif " " in v:
+                    v = '"%s"' % v
+            out += "%s=%s " % (k, v)
+        return out.strip()
+
+    def format_exception(self, e):
+        self.appendix = traceback.format_exc()
 
 
 class Console(Transport):
@@ -37,7 +62,7 @@ class Console(Transport):
     COLORS = {"highlighted_red": "\033[41m", "bold_red": "\033[1m\033[31m", "red": "\033[31m",
         "yellow": "\033[33m", "green": "\033[32m", "blue": "\033[34m"}
     
-    def __init__(self, format=None, colorize=False, timestamps=False, caller=False, stream=None, *args, **kwargs):
+    def __init__(self, format=None, colorize=False, timestamps=False, stream=None, *args, **kwargs):
         self.stream = stream or sys.stdout
         if format:
             self.format = format
@@ -50,8 +75,6 @@ class Console(Transport):
             self.format += "{level:<9} "
             self.format += "{msg}"
             
-            if caller: self.format += " [@omgmail.mail.models]"
-            
             if colorize: self.format += "{end_color}"
             
             self.format += "\n"
@@ -63,6 +86,8 @@ class Console(Transport):
             msg += " %s" % self.format_vals(args)
         if kwargs:
             msg += " %s" % self.format_kv(kwargs)
+        if self.appendix:
+            msg += "\n%s" % self.appendix
         
         msg = msg.strip()
         
