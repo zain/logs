@@ -5,15 +5,18 @@ class Transport(object):
     def __init__(self, level, handler=None, *args, **kwargs):
         self.handler = handler
         self.level = level
-        self.appendix = ""
     
     def log(self, name, level, all_levels, msg="", *args, **kwargs):
+        a_appendix = ""
+        k_appendix = ""
         if args:
-            msg += " %s" % self.format_vals(args)
+            vals, a_appendix = self.format_vals(args)
+            msg += " " + vals
         if kwargs:
-            msg += " %s" % self.format_kv(kwargs)
-        if self.appendix:
-            msg += "\n%s" % self.appendix
+            kv, k_appendix = self.format_kv(kwargs)
+            msg += " " + kv
+        if a_appendix or k_appendix:
+            msg += "\n%s" % (a_appendix + k_appendix)
 
         msg = msg.strip()
         
@@ -32,20 +35,22 @@ class Transport(object):
     def format_vals(self, l):
         """Format a list of positional values that were logged"""
         out = ""
+        appendix = ""
         for i in l:
             if isinstance(i, Exception):
-                self.format_exception(i)
+                appendix = self.format_exception(i)
             else:
                 i = unicode(i)
                 out += i + " "
-        return out.strip()
+        return (out.strip(), appendix)
     
     def format_kv(self, pairs):
         """Format a dictionary with key/value pairs that were logged"""
         out = ""
+        appendix = ""
         for k, v in pairs.items():
             if isinstance(v, Exception):
-                self.format_exception(v)
+                appendix = self.format_exception(v)
             else:
                 v = unicode(v)
                 if "\n" in v:
@@ -53,10 +58,10 @@ class Transport(object):
                 elif " " in v:
                     v = '"%s"' % v
             out += "%s=%s " % (k, v)
-        return out.strip()
+        return (out.strip(), appendix)
 
     def format_exception(self, e):
-        self.appendix = traceback.format_exc()
+        return traceback.format_exc()
 
 
 class Console(Transport):
@@ -84,12 +89,16 @@ class Console(Transport):
         Transport.__init__(self, *args, **kwargs)
     
     def log(self, name, level, all_levels, msg="", *args, **kwargs):
+        a_appendix = ""
+        k_appendix = ""
         if args:
-            msg += " %s" % self.format_vals(args)
+            vals, a_appendix = self.format_vals(args)
+            msg += " " + vals
         if kwargs:
-            msg += " %s" % self.format_kv(kwargs)
-        if self.appendix:
-            msg += "\n%s" % self.appendix
+            kv, k_appendix = self.format_kv(kwargs)
+            msg += " " + kv
+        if a_appendix or k_appendix:
+            msg += "\n%s" % (a_appendix + k_appendix)
         
         msg = msg.strip()
         

@@ -11,7 +11,7 @@ with open('LICENSE') as f:
 
 setup(
     name='logs',
-    version='0.0.1',
+    version='0.0.2',
     description='Logging for humans.',
     long_description=readme,
     author='Zain Memon',

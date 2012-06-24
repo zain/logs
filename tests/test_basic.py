@@ -106,4 +106,4 @@ class ConsoleTransportTestSuite(CustomTransportTestSuite):
         self.assertEquals(num_logged, num_expected)
     
     def assert_msg_logged(self, expected_msg):
-        self.assertTrue(expected_msg in self.stream.getvalue())
+        self.assertTrue(expected_msg in self.stream.getvalue(), self.stream.getvalue())
