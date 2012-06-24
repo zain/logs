@@ -36,6 +36,7 @@ class Transport(object):
             if isinstance(i, Exception):
                 self.format_exception(i)
             else:
+                i = unicode(i)
                 out += i + " "
         return out.strip()
     
@@ -46,6 +47,7 @@ class Transport(object):
             if isinstance(v, Exception):
                 self.format_exception(v)
             else:
+                v = unicode(v)
                 if "\n" in v:
                     v = '"""%s"""' % v
                 elif " " in v:
