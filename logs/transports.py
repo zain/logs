@@ -74,7 +74,7 @@ class Console(Transport):
         if format:
             self.format = format
         else:
-            self.format = ""
+            self.format = u""
             if colorize: self.format += "{start_color}"
             
             if timestamps: self.format += "{time:%d %b %H:%M:%S} "

@@ -44,6 +44,11 @@ class DefaultLoggerTestSuite(unittest.TestCase):
         self.assert_msg_logged("raise Exception")
         self.assert_msg_logged("Exception: This is the exception message")
 
+    def test_unicode_logging(self):
+        self.logger.emergency(u"This is a fa\u00e7ade")
+        self.assert_num_logged(1)
+        self.assert_msg_logged(u"This is a fa\u00e7ade")
+
     # can't actually test these for the default logger, but children can
     def assert_num_logged(self, num_expected):
         pass
