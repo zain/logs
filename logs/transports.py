@@ -100,7 +100,8 @@ class Console(Transport):
         if a_appendix or k_appendix:
             msg += "\n%s" % (a_appendix + k_appendix)
         
-        msg = msg.strip()
+        if hasattr(msg, "strip"):
+            msg = msg.strip()
         
         output = self.format.format(msg=msg, name=name, level=level, time=datetime.datetime.now(),
             start_color=self.color_for(level, all_levels), end_color="\033[0m")
